@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   ComposedChart,
   Line,
@@ -20,6 +21,8 @@ interface HourlyForecastChartProps {
 }
 
 export default function HourlyForecastChart({ data }: HourlyForecastChartProps) {
+  const [baseNow] = useState(() => Date.now());
+
   if (!data || data.length === 0) {
     return <div className="text-center text-slate-500">No hourly forecast data available</div>;
   }
@@ -27,7 +30,7 @@ export default function HourlyForecastChart({ data }: HourlyForecastChartProps) 
   // Format data for charts (robust + deduplicate by timestamp)
   const mapped = data.map((hour, idx) => {
     const timeStr = hour.time ?? "";
-    const date = timeStr ? new Date(timeStr) : new Date(Date.now() + idx * 3600 * 1000);
+    const date = timeStr ? new Date(timeStr) : new Date(baseNow + idx * 3600 * 1000);
     const timestamp = Number(date.valueOf());
 
     return {
@@ -63,7 +66,7 @@ export default function HourlyForecastChart({ data }: HourlyForecastChartProps) 
       <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-lg">
         <div className="mb-6">
           <h4 className="text-lg font-semibold text-slate-900">Temperature Trend</h4>
-          <p className="mt-1 text-sm text-slate-600">24-hour temperature forecast with "feels like" index</p>
+          <p className="mt-1 text-sm text-slate-600">24-hour temperature forecast with &quot;feels like&quot; index</p>
         </div>
         <div className="w-full h-56 sm:h-72 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
