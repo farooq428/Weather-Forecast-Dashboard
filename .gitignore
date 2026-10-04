@@ -5,6 +5,10 @@
 .next/
 out/
 
+.env
+.env.local 
+
+
 # Next.js build output
 next-env.d.ts
 
@@ -128,3 +132,4 @@ Desktop.ini
 # ================================
 
 debug/
+
