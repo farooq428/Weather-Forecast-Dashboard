@@ -1,135 +1,41 @@
-# ================================
-# Next.js
-# ================================
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-.next/
-out/
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-.env
-.env.local 
+# testing
+/coverage
 
+# next.js
+/.next/
+/out/
 
-# Next.js build output
-next-env.d.ts
+# production
+/build
 
+# misc
+.DS_Store
+*.pem
 
-# ================================
-# Dependencies
-# ================================
-
-node_modules/
-
-# Package manager files
-.pnpm-debug.log*
-.yarn-debug.log*
-.yarn-error.log*
-
-
-# ================================
-# Production
-# ================================
-
-build/
-
-
-# ================================
-# Environment Variables
-# ================================
-
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Keep an example environment file
-# .env.example
-
-
-# ================================
-# Logs
-# ================================
-
-logs/
-*.log
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
+.pnpm-debug.log*
 
+# env files (can opt-in for committing if needed)
+.env*
 
-# ================================
-# Testing
-# ================================
+# vercel
+.vercel
 
-coverage/
-.nyc_output/
-
-
-# ================================
-# TypeScript
-# ================================
-
+# typescript
 *.tsbuildinfo
-
-
-# ================================
-# Vercel
-# ================================
-
-.vercel/
-
-
-# ================================
-# Turbo
-# ================================
-
-.turbo/
-
-
-# ================================
-# IDE / Editors
-# ================================
-
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-
-.idea/
-*.swp
-*.swo
-
-
-# ================================
-# Operating System
-# ================================
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# macOS
-.DS_Store
-
-# Linux
-*~
-
-
-# ================================
-# Temporary files
-# ================================
-
-*.tmp
-*.temp
-*.bak
-
-
-# ================================
-# Debug
-# ================================
-
-debug/
-
+next-env.d.ts
