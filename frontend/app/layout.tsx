@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Weather And Currency Dashboard",
-  description: "Weather And Currency Dasboard using next js ",
+  title: "Daily Weather Forecast",
+  description: "Weather Data Using Weather API  ",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

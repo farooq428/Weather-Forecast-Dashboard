@@ -5,7 +5,6 @@ import {
   Line,
   Bar,
   BarChart,
-  LineChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -25,20 +24,29 @@ export default function HourlyForecastChart({ data }: HourlyForecastChartProps) 
     return <div className="text-center text-slate-500">No hourly forecast data available</div>;
   }
 
-  // Format data for charts
-  const chartData = data.map((hour) => ({
-    time: new Date(hour.time).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    }),
-    temp: Math.round(hour.temp_c),
-    feelsLike: Math.round(hour.feelslike_c),
-    precip: hour.precip_mm,
-    rainChance: hour.chance_of_rain,
-    wind: hour.wind_mph,
-    timestamp: new Date(hour.time).getTime(),
-  }));
+  // Format data for charts (robust + deduplicate by timestamp)
+  const mapped = data.map((hour, idx) => {
+    const timeStr = hour.time ?? "";
+    const date = timeStr ? new Date(timeStr) : new Date(Date.now() + idx * 3600 * 1000);
+    const timestamp = Number(date.valueOf());
+
+    return {
+      time: date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
+      temp: typeof hour.temp_c === "number" ? Math.round(hour.temp_c) : null,
+      feelsLike: typeof hour.feelslike_c === "number" ? Math.round(hour.feelslike_c) : null,
+      precip: typeof hour.precip_mm === "number" ? hour.precip_mm : 0,
+      rainChance: typeof hour.chance_of_rain === "number" ? hour.chance_of_rain : 0,
+      wind: typeof hour.wind_mph === "number" ? hour.wind_mph : 0,
+      timestamp,
+    };
+  });
+
+  // Remove duplicates (same timestamp) and sort
+  const uniqMap = new Map<number, typeof mapped[0]>();
+  mapped.forEach((m) => {
+    if (!uniqMap.has(m.timestamp)) uniqMap.set(m.timestamp, m);
+  });
+  const chartData = Array.from(uniqMap.values()).sort((a, b) => a.timestamp - b.timestamp);
 
   // Color scheme for charts
   const colors = {
@@ -57,9 +65,9 @@ export default function HourlyForecastChart({ data }: HourlyForecastChartProps) 
           <h4 className="text-lg font-semibold text-slate-900">Temperature Trend</h4>
           <p className="mt-1 text-sm text-slate-600">24-hour temperature forecast with "feels like" index</p>
         </div>
-        <div className="h-80 w-full">
+        <div className="w-full h-56 sm:h-72 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+            <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <defs>
                 <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={colors.temp} stopOpacity={0.3} />
@@ -113,63 +121,7 @@ export default function HourlyForecastChart({ data }: HourlyForecastChartProps) 
       </div>
 
       {/* Precipitation & Rain Chance */}
-      <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-lg">
-        <div className="mb-6">
-          <h4 className="text-lg font-semibold text-slate-900">Precipitation & Rain Chance</h4>
-          <p className="mt-1 text-sm text-slate-600">Expected rainfall and probability over the next 24 hours</p>
-        </div>
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis
-                dataKey="time"
-                stroke="#64748b"
-                style={{ fontSize: "12px" }}
-                tick={{ fill: "#64748b" }}
-              />
-              <YAxis
-                yAxisId="left"
-                stroke="#64748b"
-                style={{ fontSize: "12px" }}
-                tick={{ fill: "#64748b" }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                stroke="#64748b"
-                style={{ fontSize: "12px" }}
-                tick={{ fill: "#64748b" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1e293b",
-                  border: "1px solid #475569",
-                  borderRadius: "8px",
-                  color: "#f1f5f9",
-                }}
-                formatter={(value, name) => {
-                  if (name === "rainChance") return [`${value}%`, "Rain Chance"];
-                  if (name === "precip") return [`${value} mm`, "Precipitation"];
-                  return value;
-                }}
-              />
-              <Legend />
-              <Bar yAxisId="left" dataKey="precip" fill={colors.precip} name="Precipitation (mm)" radius={[8, 8, 0, 0]} />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="rainChance"
-                stroke={colors.rainChance}
-                strokeWidth={3}
-                dot={{ r: 3, fill: colors.rainChance }}
-                activeDot={{ r: 5 }}
-                name="Rain Chance (%)"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      {/* Precipitation & Rain Chance chart removed per request to simplify UI */}
 
       {/* Wind Speed Chart */}
       <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-lg">
@@ -177,9 +129,9 @@ export default function HourlyForecastChart({ data }: HourlyForecastChartProps) 
           <h4 className="text-lg font-semibold text-slate-900">Wind Speed Analysis</h4>
           <p className="mt-1 text-sm text-slate-600">Wind speed forecast for the next 24 hours</p>
         </div>
-        <div className="h-80 w-full">
+        <div className="w-full h-56 sm:h-72 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+            <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="time"
@@ -216,10 +168,10 @@ export default function HourlyForecastChart({ data }: HourlyForecastChartProps) 
       {/* Key Metrics Summary */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {(() => {
-          const temps = chartData.map((d) => d.temp);
-          const precips = chartData.map((d) => d.precip);
-          const rainChances = chartData.map((d) => d.rainChance);
-          const winds = chartData.map((d) => d.wind);
+          const temps = chartData.map((d) => (typeof d.temp === 'number' ? d.temp : 0));
+          const precips = chartData.map((d) => (typeof d.precip === 'number' ? d.precip : 0));
+          const rainChances = chartData.map((d) => (typeof d.rainChance === 'number' ? d.rainChance : 0));
+          const winds = chartData.map((d) => (typeof d.wind === 'number' ? d.wind : 0));
 
           return [
             {

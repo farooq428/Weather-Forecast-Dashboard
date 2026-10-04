@@ -56,7 +56,7 @@ export default function WeatherPanel({ data, error, loading }: WeatherPanelProps
   return (
     <section className="mx-auto w-full max-w-6xl space-y-6">
       <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)]">
-        <div className="bg-linear-to-r from-sky-600 via-cyan-500 to-blue-600 p-6 text-white sm:p-8">
+        <div className="bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600 p-6 text-white sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-100">
@@ -106,7 +106,7 @@ export default function WeatherPanel({ data, error, loading }: WeatherPanelProps
               <MetricCard label="Humidity" value={`${current.humidity}%`} accent="bg-sky-50 text-sky-700" />
               <MetricCard label="Wind" value={`${current.wind_mph} mph`} accent="bg-amber-50 text-amber-700" />
               <MetricCard label="Rain" value={`${current.precip_mm} mm`} accent="bg-blue-50 text-blue-700" />
-              <MetricCard label="Feels Like" value={`${Math.round(current.feelslike_f)}°F`} accent="bg-violet-50 text-violet-700" />
+              <MetricCard label="Feels Like" value={`${Math.round(current.feelslike_c)}°C`} accent="bg-violet-50 text-violet-700" />
             </div>
           </div>
 
@@ -116,10 +116,19 @@ export default function WeatherPanel({ data, error, loading }: WeatherPanelProps
               <h3 className="mt-2 text-2xl font-bold">Today</h3>
             </div>
 
-            <InsightItem label="Humidity" value={`${current.humidity}%`} tone="sky" />
-            <InsightItem label="Wind" value={`${current.wind_mph} mph`} tone="amber" />
-            <InsightItem label="Rain risk" value={`${maxRainChance}%`} tone="blue" />
-            <InsightItem label="Feels like" value={`${Math.round(current.feelslike_c)}°C`} tone="violet" />
+            {(() => {
+              const today = nextThreeDays[0]?.day;
+              if (!today) return null;
+
+              return (
+                <>
+                  <InsightItem label="High" value={`${Math.round(today.maxtemp_c)}°C`} tone="sky" />
+                  <InsightItem label="Low" value={`${Math.round(today.mintemp_c)}°C`} tone="amber" />
+                  <InsightItem label="Rain risk" value={`${today.daily_chance_of_rain}%`} tone="blue" />
+                  <InsightItem label="Precip total" value={`${today.totalprecip_mm} mm`} tone="violet" />
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>

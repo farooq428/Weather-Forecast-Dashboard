@@ -9,7 +9,7 @@ interface WeatherSearchProps {
 }
 
 export default function WeatherSearch({
-  initialCity = "Faisalabad",
+  initialCity = "",
   onSearch,
   loading = false,
 }: WeatherSearchProps) {
