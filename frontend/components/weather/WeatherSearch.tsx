@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 interface WeatherSearchProps {
   initialCity?: string;
@@ -15,6 +15,7 @@ export default function WeatherSearch({
 }: WeatherSearchProps) {
   const [query, setQuery] = useState(initialCity);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [recent, setRecent] = useState<string[]>([]);
 
   const buttonLabel = useMemo(() => (loading ? "Loading..." : "Search"), [loading]);
 
@@ -25,6 +26,7 @@ export default function WeatherSearch({
     if (trimmedQuery) {
       setLocationError(null);
       onSearch(trimmedQuery);
+      saveRecent(trimmedQuery);
     }
   };
 
@@ -45,6 +47,7 @@ export default function WeatherSearch({
 
         setQuery(formattedCoordinates);
         onSearch(formattedCoordinates);
+          saveRecent(formattedCoordinates);
       },
       () => {
         setLocationError("Location access was denied. Please enter a city or coordinates manually.");
@@ -55,6 +58,49 @@ export default function WeatherSearch({
         maximumAge: 60000,
       }
     );
+  };
+
+  // localStorage helpers
+  const STORAGE_KEY = "weather:recent-searches";
+
+  function saveRecent(value: string) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr: string[] = raw ? JSON.parse(raw) : [];
+      const normalized = value.trim();
+      if (!normalized) return;
+
+      const dedup = [normalized, ...arr.filter((v) => v !== normalized)];
+      const limited = dedup.slice(0, 5);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(limited));
+      setRecent(limited);
+    } catch (e) {
+      // ignore storage errors
+    }
+  }
+
+  useEffect(() => {
+    // load recent searches on mount
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr: string[] = raw ? JSON.parse(raw) : [];
+      setRecent(arr || []);
+
+      // If no initialCity provided, auto-search the last recent
+      if (!initialCity && arr && arr.length > 0) {
+        const last = arr[0];
+        setQuery(last);
+        onSearch(last);
+      }
+    } catch (e) {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleRecentClick = (value: string) => {
+    setQuery(value);
+    onSearch(value);
   };
 
   return (
@@ -93,6 +139,8 @@ export default function WeatherSearch({
       {locationError ? (
         <p className="mt-2 text-sm text-red-500">{locationError}</p>
       ) : null}
+
+      
     </form>
   );
 }
