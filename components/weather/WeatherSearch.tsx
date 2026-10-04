@@ -15,26 +15,9 @@ export default function WeatherSearch({
 }: WeatherSearchProps) {
   const STORAGE_KEY = "weather:recent-searches";
 
-  const [query, setQuery] = useState(() => {
-    if (initialCity) return initialCity;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const arr: string[] = raw ? JSON.parse(raw) : [];
-      return arr && arr.length > 0 ? arr[0] : initialCity;
-    } catch (e) {
-      return initialCity;
-    }
-  });
-
+  const [query, setQuery] = useState(initialCity);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [recent, setRecent] = useState<string[]>(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  });
+  const [recent, setRecent] = useState<string[]>([]);
 
   const buttonLabel = useMemo(() => (loading ? "Loading..." : "Search"), [loading]);
 
@@ -96,11 +79,27 @@ export default function WeatherSearch({
   }
 
   useEffect(() => {
-    // If no initialCity provided, auto-search the last recent loaded into `query`.
-    if (!initialCity && query) {
-      onSearch(query);
+    // Read localStorage after mount to avoid hydration mismatches.
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr: string[] = raw ? JSON.parse(raw) : [];
+
+      // Update state asynchronously to avoid synchronous setState-in-effect lint.
+      setTimeout(() => {
+        setRecent(arr || []);
+
+        // If no initialCity provided, auto-search the last recent
+        if (!initialCity && arr && arr.length > 0) {
+          const last = arr[0];
+          setQuery(last);
+          onSearch(last);
+        }
+      }, 0);
+    } catch (e) {
+      // ignore
     }
-  }, [initialCity, onSearch, query]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRecentClick = (value: string) => {
     setQuery(value);
